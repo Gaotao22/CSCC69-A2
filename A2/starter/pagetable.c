@@ -42,9 +42,9 @@ int allocate_frame(pgtbl_entry_t *p) {
 
 		// Write victim page to swap, if needed, and update pagetable
 		// IMPLEMENTATION NEEDED
-		if (prep_v->frame & PG_DIRTY){
-			prep_v->swap_off = swap_pageout(frame, prev_p->swap_off);
-			prep->frame |= PG_ONSWAP;
+		if (prev_p->frame & PG_DIRTY){
+			prev_p->swap_off = swap_pageout(frame, prev_p->swap_off);
+			prev_p->frame |= PG_ONSWAP;
 			//evict the frame to swap file
 			evict_dirty_count ++;
 		}else{
@@ -159,7 +159,7 @@ char *find_physpage(addr_t vaddr, char type) {
 
 	// Use vaddr to get index into 2nd-level page table and initialize 'p'
 	unsigned pgtbl = PGTBL_INDEX(vaddr);//index into the 2nd table
-	p = (pgtbl_entry_t*)(pgtbl + *pgdir[idx].pde);//move the pointer to the corresponding slot
+	p = pgtbl + (pgtbl_entry_t*)(pgdir[idx].pde);//move the pointer to the corresponding slot
 	
 
 
@@ -171,17 +171,17 @@ char *find_physpage(addr_t vaddr, char type) {
 		p->frame = frame << PAGE_SHIFT;
 		//frame is initialized hence it is changed but it is not on swap, mark it accordingly
 		p->frame |= PG_DIRTY;
-		p->frame ~= PG_ONSWAP;
+		p->frame &= ~PG_ONSWAP;
 		miss_count++;
 		
 	}
 	// Check if p is invalid and on swap	
 	else if (!(p->frame & PG_VALID) && (p->frame & PG_ONSWAP)){
-		int frame = allocated_frame(p);//In this case
+		int frame = allocate_frame(p);//In this case
 		swap_pagein(frame, p->swap_off);//the frame is filled by reading the page data
 		p->frame = frame << PAGE_SHIFT;
 		//the frame is on swap but not modified, mark it accordingly
-		p->frame ~= PG_DIRTY;
+		p->frame &= ~PG_DIRTY;
 		p->frame |= PG_ONSWAP;
 		miss_count ++;
 	}else {
