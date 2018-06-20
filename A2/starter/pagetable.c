@@ -40,13 +40,14 @@ int allocate_frame(pgtbl_entry_t *p) {
 		// All frames were in use, so victim frame must hold some page
    		pgtbl_entry_t *prev_p = coremap[frame].pte;
 
-		// Write victim page to swap, if needed, and update pagetable
-		// IMPLEMENTATION NEEDED
+		// Write victim page to swap
+		//if the frame has been modified
 		if (prev_p->frame & PG_DIRTY){
 			prev_p->swap_off = swap_pageout(frame, prev_p->swap_off);
 			prev_p->frame |= PG_ONSWAP;
 			//evict the frame to swap file
 			evict_dirty_count ++;
+		//if the frame has not been modified
 		}else{
 			//not evict the frame to swap file
 			evict_clean_count ++;
