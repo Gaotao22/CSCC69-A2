@@ -18,7 +18,9 @@ extern struct frame *coremap;
  */
 int fifo_evict() {
 	int i;
-	pgtbl_entry_t *ret_p = coremap[0];
+	int ret_f;
+	coremap[i].in_use = 0;
+	coremap[i].pte = NULL;
 	for (i = 0; i < memsize; i++){
 		if (coremap[i + 1].pte == NULL){
 			coremap[i].in_use = 0;
@@ -27,7 +29,8 @@ int fifo_evict() {
 		}
 		coremap[i] = coremap[i + 1];		
 	}
-	return ret_p->frame;
+	ret_f = i;
+	return ret_f;
 }
 
 /* This function is called on each access to a page to update any information
@@ -51,11 +54,13 @@ void fifo_ref(pgtbl_entry_t *p) {
  * replacement algorithm 
  */
 void fifo_init() {
-	coremap = malloc(memsize * sizeof(frame));
+	//coremap = malloc(memsize * sizeof(struct frame));
 	//put all page entry pointer to null
 	int i;
 	for (i = 0; i < memsize; i++){
 		coremap[i].in_use = 0;
 		coremap[i].pte = NULL;
+		coremap[i].pin = 0;
 	}
+	coremap[0].pin = 1;
 }

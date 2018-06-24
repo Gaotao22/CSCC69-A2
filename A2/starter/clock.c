@@ -20,24 +20,25 @@ extern struct frame *coremap;
 int clock_evict() {
 	int i;
 	int j;
-	pgtbl_entry_t *ret_p;
+	int ret_f;
 	for (j = 0; j < memsize; j++){
-		if (coremap[j].pte->frame & PG_REF){
-			coremap[j].pte->frame &= ~PG_REF;
-		}else{
-			ret_p = coremap[j].pte;
+		if (coremap[i].pin == 1){
+			coremap[i].pin = 0;
 			break;
 		}
 	}
+		
 	for (i = j; i < memsize; i++){
-		if (coremap[i + 1].pte == NULL){
-			coremap[i].in_use = 0;
-			coremap[i].pte = NULL;
+		if (coremap[i].pte->frame & PG_REF){
+			coremap[i].pte->frame &= ~PG_REF;
+		}else{
+			ret_f = i;
+			coremap[i].pte -> in_use = 0;
+			coremap[i + 1].pin = 1;
 			break;
 		}
-		coremap[i] = coremap[i + 1];		
 	}
-	return ret_p->frame;
+	return ret_f;
 	
 }
 
@@ -62,11 +63,13 @@ void clock_ref(pgtbl_entry_t *p) {
  * algorithm. 
  */
 void clock_init() {
-	coremap = malloc(memsize * sizeof(frame));
+	coremap = malloc(memsize * sizeof(struct frame));
 	//put all page entry pointer to null
 	int i;
 	for (i = 0; i < memsize; i++){
 		coremap[i].in_use = 0;
 		coremap[i].pte = NULL;
+		coremap[i].pin = 0;
 	}
+	coremap[0].pin = 1;
 }
