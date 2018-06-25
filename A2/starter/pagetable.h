@@ -65,7 +65,7 @@ struct frame {
 	char in_use;       // True if frame is allocated, False if frame is free
 	pgtbl_entry_t *pte;// Pointer back to pagetable entry (pte) for page
 	                   // stored in this frame
-	bool pin;
+	bool pin;	//Indicate the oldest page
 	
 };
 

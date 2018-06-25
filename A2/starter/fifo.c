@@ -17,19 +17,24 @@ extern struct frame *coremap;
  * for the page that is to be evicted.
  */
 int fifo_evict() {
-	int i;
+	int j;
 	int ret_f;
-	coremap[i].in_use = 0;
-	coremap[i].pte = NULL;
-	for (i = 0; i < memsize; i++){
-		if (coremap[i + 1].pte == NULL){
-			coremap[i].in_use = 0;
-			coremap[i].pte = NULL;
+	for (j = 0; j < memsize; j++){
+		if (coremap[j].pin == 1){
+			coremap[i].pin = 0;
 			break;
 		}
-		coremap[i] = coremap[i + 1];		
 	}
-	ret_f = i;
+		
+	ret_f = j;
+	coremap[j].pte -> in_use = 0;
+	//set pin to the frame containing the oldest page
+	if (j == memsize - 1){
+		coremap[0].pin = 1
+	} else {
+		coremap[i + 1].pin = 1;
+		break;
+	}
 	return ret_f;
 }
 
@@ -38,15 +43,6 @@ int fifo_evict() {
  * Input: The page table entry for the page that is being accessed.
  */
 void fifo_ref(pgtbl_entry_t *p) {
-	int i;
-	for (i = 0; i < memsize; i++){
-		if (coremap[i].pte == NULL){
-			coremap[i].in_use = 1;
-			coremap[i].pte = p;
-			
-			break;
-		}
-	}
 	return;
 }
 

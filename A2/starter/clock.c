@@ -22,8 +22,8 @@ int clock_evict() {
 	int j;
 	int ret_f;
 	for (j = 0; j < memsize; j++){
-		if (coremap[i].pin == 1){
-			coremap[i].pin = 0;
+		if (coremap[j].pin == 1){
+			coremap[j].pin = 0;
 			break;
 		}
 	}
@@ -47,15 +47,7 @@ int clock_evict() {
  * Input: The page table entry for the page that is being accessed.
  */
 void clock_ref(pgtbl_entry_t *p) {
-	int i;
-	for (i = 0; i < memsize; i++){
-		if (coremap[i].pte == NULL){
-			coremap[i].in_use = 1;
-			coremap[i].pte = p;
-			
-			break;
-		}
-	}
+	
 	return;
 }
 
