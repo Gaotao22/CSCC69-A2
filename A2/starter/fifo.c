@@ -16,26 +16,18 @@ extern struct frame *coremap;
  * Returns the page frame number (which is also the index in the coremap)
  * for the page that is to be evicted.
  */
+
+int pin; // define the variable to label the frame with the oldest page 
+
 int fifo_evict() {
-	int j;
-	int ret_f;
-	for (j = 0; j < memsize; j++){
-		if (coremap[j].pin == 1){
-			coremap[i].pin = 0;
-			break;
-		}
+	int ret_frame;
+	ret_frame = pin;
+	pin ++;
+	// reset the pin to 0 if it reaches the capacity of the physical memory
+	if (pin >= memsize){
+		pin = 0;
 	}
-		
-	ret_f = j;
-	coremap[j].pte -> in_use = 0;
-	//set pin to the frame containing the oldest page
-	if (j == memsize - 1){
-		coremap[0].pin = 1
-	} else {
-		coremap[i + 1].pin = 1;
-		break;
-	}
-	return ret_f;
+	return ret_frame;
 }
 
 /* This function is called on each access to a page to update any information
@@ -50,13 +42,6 @@ void fifo_ref(pgtbl_entry_t *p) {
  * replacement algorithm 
  */
 void fifo_init() {
-	//coremap = malloc(memsize * sizeof(struct frame));
-	//put all page entry pointer to null
-	int i;
-	for (i = 0; i < memsize; i++){
-		coremap[i].in_use = 0;
-		coremap[i].pte = NULL;
-		coremap[i].pin = 0;
-	}
-	coremap[0].pin = 1;
+	//put the pin on where the oldest page is.
+	pin = 0;
 }

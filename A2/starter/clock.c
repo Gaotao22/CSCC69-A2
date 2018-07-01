@@ -17,26 +17,27 @@ extern struct frame *coremap;
  * for the page that is to be evicted.
  */
 
+int pin; // Define the variable that tracks the next frame
+
 int clock_evict() {
 	int i;
-	int j;
 	int ret_f;
-	for (j = 0; j < memsize; j++){
-		if (coremap[j].pin == 1){
-			coremap[j].pin = 0;
+	// check the reference number of each element from where the process ended the last time
+	for (i = pin; i < memsize; i++){
+		// if the reference number is 1, set it to 0
+		if (coremap[i].pte->frame & PG_REF){
+			coremap[i].pte->frame &= ~PG_REF;
+		// if the reference number is 0, then evict the frame
+		}else{
+			ret_f = i;
 			break;
 		}
 	}
-		
-	for (i = j; i < memsize; i++){
-		if (coremap[i].pte->frame & PG_REF){
-			coremap[i].pte->frame &= ~PG_REF;
-		}else{
-			ret_f = i;
-			coremap[i].pte -> in_use = 0;
-			coremap[i + 1].pin = 1;
-			break;
-		}
+	// set the starting frame of the new round to the next frame
+	pin = ret_f + 1;
+	// reset the next frame to 0 if we reached the end of the physical memory list
+	if (pin >= memsize){
+		pin = 0;
 	}
 	return ret_f;
 	
@@ -55,13 +56,6 @@ void clock_ref(pgtbl_entry_t *p) {
  * algorithm. 
  */
 void clock_init() {
-	coremap = malloc(memsize * sizeof(struct frame));
-	//put all page entry pointer to null
-	int i;
-	for (i = 0; i < memsize; i++){
-		coremap[i].in_use = 0;
-		coremap[i].pte = NULL;
-		coremap[i].pin = 0;
-	}
-	coremap[0].pin = 1;
+	// Start to iterate the physical mem table from the beginning
+	pin = 0;
 }
