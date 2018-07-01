@@ -12,7 +12,7 @@ extern int debug;
 
 extern struct frame *coremap;
 
-int framestack[memsize];
+int* framestack;
 
 /* This function shift the content behind the selected index
  * To the index right before it
@@ -22,11 +22,11 @@ int shift_index(int index){
 	int i = index + 1;
 	while(i < memsize){
 		framestack[i - 1] = framestack[i];
-		if (framestack[i] == NULL){
+		if (framestack[i] == -1){
 			break;
 		}
 		if (i == memsize - 1){
-			framestack[i] = NULL;
+			framestack[i] = -1;
 		}
 		i ++;
 	}
@@ -35,7 +35,7 @@ int shift_index(int index){
 
 int find_frame(int current_frame){
 	int i = 0;
-	while (framestack[i] != NULL && framestack[i] != current_frame && i < memsize){
+	while (framestack[i] != -1 && framestack[i] != current_frame && i < memsize){
 		i++;
 	}
 	return i;
@@ -75,9 +75,10 @@ void lru_ref(pgtbl_entry_t *p) {
  */
 void lru_init() {
 	//put all page entry pointer to null
+	framestack = malloc(memsize);
 	int i;
 	for (i = 0; i < memsize; i++){
-		framestack[i] = NULL;
+		framestack[i] = -1;
 	}
 
 }

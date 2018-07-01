@@ -45,8 +45,8 @@ void opt_ref(pgtbl_entry_t *p) {
 //initialize the frames and get the virtual addresses that will 
 //be used to form the frame. It is helpful for prediction
 void opt_init() {
-	addr_t vaddr;
 	char type;
+	addr_t vaddr;
 	char buf1[256];
 	char buf2[256];
 	if(tracefile == NULL){
