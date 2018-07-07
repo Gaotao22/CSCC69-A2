@@ -196,6 +196,8 @@ void opt_ref(pgtbl_entry_t *p) {
 	int num = next_num(ll);
 	f->num_to_ref = num;
 
+	fram_num++;
+
 	return;
 }
 
@@ -233,11 +235,17 @@ void opt_init() {
 	addList = malloc(count);
 	if (count >= 0){
 		int i = 0;
+		int hash;
 		while(fgets(buf2, 256, tfile) != NULL) {
 			if(buf2[0] != '=') {
 				sscanf(buf2, "%c %lx", &type, &vaddr);
 				addList[i] = vaddr;
-				i ++;
+
+				// vaddr tracker stuff
+				hash = get_hash(vaddr);
+				tracker[hash] = add_vaddr_node(tracker, vaddr, i);
+
+				i++;
 			} else {
 			continue;
 			}
