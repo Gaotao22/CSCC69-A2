@@ -75,7 +75,7 @@ void lru_ref(pgtbl_entry_t *p) {
  */
 void lru_init() {
 	//put all page entry pointer to null
-	framestack = malloc(memsize);
+	framestack = malloc(memsize * sizeof(int));
 	int i;
 	for (i = 0; i < memsize; i++){
 		framestack[i] = -1;
