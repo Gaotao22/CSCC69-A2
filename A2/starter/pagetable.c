@@ -43,7 +43,7 @@ int allocate_frame(pgtbl_entry_t *p) {
 		// Write victim page to swap
 		//if the frame has been modified
 		if (prev_p->frame & PG_DIRTY){
-			prev_p->swap_off = swap_pageout(frame, prev_p->swap_off);
+			prev_p->swap_off = swap_pageout(frame, prev_p->swap_off);		
 			prev_p->frame |= PG_ONSWAP;
 			//evict the frame to swap file
 			evict_dirty_count ++;
