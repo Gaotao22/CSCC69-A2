@@ -16,6 +16,7 @@ extern struct frame *coremap;
 extern char *tracefile;
 
 /* typedefs for storing addrs stuff */
+typedef struct Number number;
 typedef struct Number {
         int num_ref;
         number *next;
@@ -27,12 +28,13 @@ typedef struct VaddrTracker {
         number *num_fut_ref;
 } vaddr_tracker;
 
+typedef struct LinkedList linked_list;
 typedef struct LinkedList {
 	vaddr_tracker *item;
 	linked_list *next;
 } linked_list;
 
-linked_list *tracker;
+linked_list **tracker;
 /* end of typedefs */
 
 addr_t* addList;
@@ -50,14 +52,14 @@ unsigned int get_hash(addr_t vaddr) {
 
 	// pray to god this is actually a somewhat decent hash
 	// I have no idea if it is
-	hashing = (hasing << 5) ^ (hashing >> 10) ^ hashing;
+	hashing = (hashing << 5) ^ (hashing >> 10) ^ hashing;
 
 	return (unsigned int)(hashing) % bucket_size;
 }
 /* end of hashmap stuff */
 
 /* vaddr tracking funcs */
-vaddr_tracker *search_vaddr(addr_t vaddr) {
+linked_list *search_vaddr(addr_t vaddr) {
 	int hashed = get_hash(vaddr);
 	linked_list *ll = tracker[hashed];
 	vaddr_tracker *curr = ll->item;
@@ -67,41 +69,44 @@ vaddr_tracker *search_vaddr(addr_t vaddr) {
 		curr = ll->item;
 	}
 
-	if(curr == NULL || urr->vaddr != vaddr) {
+	if(curr == NULL || curr->vaddr != vaddr) {
 		fprintf(stderr, "Cannot find vaddr entry\n");
 		return NULL;
 	}
 
-	return curr;
+	return ll;
 }
 
 int init_ll(linked_list **ll) {
 	*ll = (linked_list *)malloc(sizeof(linked_list));
 	if(ll == NULL) {
 		perror("malloc");
-		return -ERRMEM;
+		return -1;
 	}
+	return 0;
 }
 
 int init_vaddr(addr_t vaddr, linked_list *ll) {
 	ll->item = (vaddr_tracker *)malloc(sizeof(vaddr_tracker));
 	if(ll->item == NULL) {
 		perror("malloc");
-		return -ERRMEM;
+		return -1;
 	}
 
 	ll->item->vaddr = vaddr;
+	return 0;
 }
 
 int init_number(number **num) {
 	*num = (number *)malloc(sizeof(number));
 	if(num == NULL) {
 		perror("malloc");
-		return -ERRMEM;
+		return -1;
 	}
+	return 0;
 }
 
-int add_vaddr(vaddr_tracker *tracker, addr_t vaddr, number *count) {
+int add_vaddr(linked_list **tracker, addr_t vaddr, number *count) {
 	vaddr_tracker *curr;
 	number *next_num;
 	int status;
@@ -152,6 +157,8 @@ int add_vaddr(vaddr_tracker *tracker, addr_t vaddr, number *count) {
 	}
 
 	curr->num_fut_ref->tail = next_num;
+
+	return 0;
 }
 
 int next_num(linked_list *ll) {
@@ -169,17 +176,19 @@ int next_num(linked_list *ll) {
  */
 int opt_evict() {
 	int evict = 0;
-        for(int i = 0; i < memsize; i++) {
-                if(coremap[i].pte->num_to_ref < coremap[evict].pte->num_to_ref) {
+	int i;
+        for(i = 0; i < memsize; i++) {
+                if(coremap[i].num_to_ref < coremap[evict].num_to_ref) {
                         evict = i;
                 }
         }
 
-        if(coremap[i].pte->frame & PG_DIRTY) {
-                evict_dirty_count++;
-        } else {
-                evict_clean_count++;
-        }
+        // if(coremap[i].pte->frame & PG_DIRTY) {
+        //         evict_dirty_count++;
+        // } else {
+        //         evict_clean_count++;
+        // }
+        pgtbl_entry_t *p = coremap[evict].pte;
         p->frame ^= PG_VALID;
         if(p->frame & PG_REF) {
                 p->frame ^= PG_REF;
@@ -195,7 +204,7 @@ int opt_evict() {
  */
 void opt_ref(pgtbl_entry_t *p) {
 	int frame_i = p->frame;
-	struct frame *f = coremap[frame_i];
+	struct frame *f = &coremap[frame_i];
 	addr_t vaddr = f->vaddr;
 
 	linked_list *ll = search_vaddr(vaddr);
@@ -206,7 +215,7 @@ void opt_ref(pgtbl_entry_t *p) {
 	int num = next_num(ll);
 	f->num_to_ref = num;
 
-	fram_num++;
+	frame_num++;
 
 	return;
 }
@@ -221,6 +230,8 @@ void opt_init() {
 	addr_t vaddr;
 	char buf1[256];
 	char buf2[256];
+	bucket_size = 0;
+
 	if(tracefile == NULL){
 		perror("tracefile not found");
 		exit(1);
@@ -244,7 +255,7 @@ void opt_init() {
 	}
 	addList = malloc(count);
 	if (count >= 0){
-		unsigned int i = 0;
+		int i = 0;
 		int hash;
 		while(fgets(buf2, 256, tfile) != NULL) {
 			if(buf2[0] != '=') {
@@ -253,7 +264,14 @@ void opt_init() {
 
 				// vaddr tracker stuff
 				hash = get_hash(vaddr);
-				tracker[hash] = add_vaddr_node(tracker, vaddr, i);
+				number *new_num;
+				if(init_number(&new_num) == -1) {
+					exit(-1);
+				}
+				new_num->num_ref = i;
+				if(add_vaddr(tracker, vaddr, new_num) == -1) {
+					exit(-1);
+				}
 
 				i++;
 			} else {
@@ -261,13 +279,14 @@ void opt_init() {
 			}
 
 		}
+		bucket_size = i > 1000 ? i / 100 : i / 10; // random guess of a good bucket size tbh
 	}
 
 	frame_num = 0;
-	bucket_size = i > 1000 ? i / 100 : i / 10; // random guess of a good bucket size tbh
+	
 	
 	//put all page entry pointer to null
-	for (i = 0; i < memsize; i++){
+	for (int i = 0; i < memsize; i++){
 		coremap[i].in_use = 0;
 		coremap[i].pte = NULL;
 	}
