@@ -52,16 +52,20 @@ unsigned int get_hash(addr_t vaddr) {
 
 	// pray to god this is actually a somewhat decent hash
 	// I have no idea if it is
-	hashing = (hashing << 5) ^ (hashing >> 10) ^ hashing;
-
-	return (unsigned int)(hashing) % bucket_size;
+	printf("hash: bitshifting\n");
+	hashing = ((hashing << 5) ^ (hashing >> 10)) % hashing;
+	printf("%d-> %ld; bucket: %d\n", (int)vaddr, hashing, bucket_size);
+	return hashing == 0 ? hashing : (unsigned int)(hashing) % bucket_size;
 }
 /* end of hashmap stuff */
 
 /* vaddr tracking funcs */
 linked_list *search_vaddr(addr_t vaddr) {
+	printf("search: hashing vaddr\n");
 	int hashed = get_hash(vaddr);
+	printf("search: hashed vaddr\n");
 	linked_list *ll = tracker[hashed];
+	printf("searching %d", (int) vaddr);
 	vaddr_tracker *curr = ll->item;
 
 	while(curr != NULL && curr->vaddr != vaddr && ll->next != NULL) {
@@ -207,6 +211,7 @@ void opt_ref(pgtbl_entry_t *p) {
 	struct frame *f = &coremap[frame_i];
 	addr_t vaddr = f->vaddr;
 
+	printf("ref: %d\n", (int) vaddr);
 	linked_list *ll = search_vaddr(vaddr);
 	if(ll == NULL) {
 		exit(1);
@@ -255,15 +260,17 @@ void opt_init() {
 	}
 	addList = malloc(count);
 	if (count >= 0){
+		rewind(tfile);
+		bucket_size = count > 100000 ? count / 100 : count; // random guess of a good bucket size tbh
+		printf("Init: start, count: %d\n", count);
 		int i = 0;
-		int hash;
 		while(fgets(buf2, 256, tfile) != NULL) {
 			if(buf2[0] != '=') {
 				sscanf(buf2, "%c %lx", &type, &vaddr);
 				addList[i] = vaddr;
 
 				// vaddr tracker stuff
-				hash = get_hash(vaddr);
+				printf("vaddr: %d\n", (int) vaddr);
 				if(add_vaddr(tracker, vaddr, i) == -1) {
 					exit(-1);
 				}
@@ -274,7 +281,10 @@ void opt_init() {
 			}
 
 		}
-		bucket_size = i > 1000 ? i / 100 : i / 10; // random guess of a good bucket size tbh
+		
+		tracker = (linked_list **)malloc(sizeof(linked_list *) * bucket_size);
+		printf("Init: complete, bucket size: %d\n", bucket_size);
+		fclose(tfile);
 	}
 
 	frame_num = 0;
