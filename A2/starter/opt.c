@@ -106,7 +106,7 @@ int init_number(number **num) {
 	return 0;
 }
 
-int add_vaddr(linked_list **tracker, addr_t vaddr, number *count) {
+int add_vaddr(linked_list **tracker, addr_t vaddr, int count) {
 	vaddr_tracker *curr;
 	number *next_num;
 	int status;
@@ -264,12 +264,7 @@ void opt_init() {
 
 				// vaddr tracker stuff
 				hash = get_hash(vaddr);
-				number *new_num;
-				if(init_number(&new_num) == -1) {
-					exit(-1);
-				}
-				new_num->num_ref = i;
-				if(add_vaddr(tracker, vaddr, new_num) == -1) {
+				if(add_vaddr(tracker, vaddr, i) == -1) {
 					exit(-1);
 				}
 
