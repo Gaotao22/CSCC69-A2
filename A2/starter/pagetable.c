@@ -169,7 +169,7 @@ char *find_physpage(addr_t vaddr, char type) {
 	if (!(p->frame & PG_VALID) && !(p->frame & PG_ONSWAP)){
 		int frame = allocate_frame(p);
 		init_frame (frame, vaddr);
-		coremap[frame]->vaddr = vaddr;
+		coremap[frame].vaddr = vaddr;
 		p->frame = frame << PAGE_SHIFT;
 		//frame is initialized hence it is changed but it is not on swap, mark it accordingly
 		p->frame |= PG_DIRTY;
@@ -181,7 +181,7 @@ char *find_physpage(addr_t vaddr, char type) {
 	else if (!(p->frame & PG_VALID) && (p->frame & PG_ONSWAP)){
 		int frame = allocate_frame(p);//In this case
 		swap_pagein(frame, p->swap_off);//the frame is filled by reading the page data
-		coremap[i]->vaddr = vaddr;
+		coremap[frame].vaddr = vaddr;
 		p->frame = frame << PAGE_SHIFT;
 		//the frame is on swap but not modified, mark it accordingly
 		p->frame &= ~PG_DIRTY;
