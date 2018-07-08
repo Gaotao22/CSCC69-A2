@@ -43,7 +43,17 @@ int frame_num;
 FILE* tfile;
 
 /* Hashmap stuff */
-int get_hash(addr_t vaddr) {}
+unsigned int bucket_size;
+
+unsigned int get_hash(addr_t vaddr) {
+	unsigned long hashing = (long) (vaddr);
+
+	// pray to god this is actually a somewhat decent hash
+	// I have no idea if it is
+	hashing = (hasing << 5) ^ (hashing >> 10) ^ hashing;
+
+	return (unsigned int)(hashing) % bucket_size;
+}
 /* end of hashmap stuff */
 
 /* vaddr tracking funcs */
@@ -234,7 +244,7 @@ void opt_init() {
 	}
 	addList = malloc(count);
 	if (count >= 0){
-		int i = 0;
+		unsigned int i = 0;
 		int hash;
 		while(fgets(buf2, 256, tfile) != NULL) {
 			if(buf2[0] != '=') {
@@ -252,9 +262,11 @@ void opt_init() {
 
 		}
 	}
+
+	frame_num = 0;
+	bucket_size = i > 1000 ? i / 100 : i / 10; // random guess of a good bucket size tbh
 	
 	//put all page entry pointer to null
-	int i;
 	for (i = 0; i < memsize; i++){
 		coremap[i].in_use = 0;
 		coremap[i].pte = NULL;
