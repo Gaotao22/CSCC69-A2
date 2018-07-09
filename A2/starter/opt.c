@@ -198,6 +198,7 @@ int opt_evict() {
         	}
                 if(coremap[i].num_to_ref > coremap[evict].num_to_ref) {
                         evict = i;
+                        printf("Evict: currently num_to_ref: %d\n", coremap[evict].num_to_ref);
                 }
         }
 
