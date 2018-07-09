@@ -193,6 +193,7 @@ int opt_evict() {
 	int i;
         for(i = 0; i < memsize; i++) {
         	if(coremap[i].num_to_ref == -1) { // no more future refs
+        		coremap[i].num_to_ref = 0;
         		evict = i;
         		break;
         	}
