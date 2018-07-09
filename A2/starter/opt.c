@@ -172,9 +172,6 @@ int add_vaddr(linked_list **tracker, addr_t vaddr, int count) {
 }
 
 int next_num(linked_list *ll) {
-	if(ll->item->num_fut_ref == NULL) {
-		return -1;
-	}
 	int num = ll->item->num_fut_ref->num_ref;
 	number *remove = ll->item->num_fut_ref;
 	ll->item->num_fut_ref = ll->item->num_fut_ref->next;
@@ -192,11 +189,7 @@ int opt_evict() {
 	int evict = 0;
 	int i;
         for(i = 0; i < memsize; i++) {
-        	if(coremap[i].num_to_ref == -1) { // no more future refs
-        		evict = i;
-        		break;
-        	}
-                if(coremap[i].num_to_ref > coremap[evict].num_to_ref) {
+                if(coremap[i].num_to_ref < coremap[evict].num_to_ref) {
                         evict = i;
                 }
         }
