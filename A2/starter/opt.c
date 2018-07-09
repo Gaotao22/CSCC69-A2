@@ -211,8 +211,9 @@ void opt_ref(pgtbl_entry_t *p) {
 	printf("\tin use %c, vaddr %d, num_to_ref %d\n", f->in_use, (int)f->vaddr, f->num_to_ref);
 
 	printf("ref: %d has num_to_ref %d on frame %d\n", (int) vaddr, f->num_to_ref, frame_num);
-	number* debug = tracker[get_hash(vaddr)]->item->num_fut_ref;
-	printf("ref: next num_to_ref: %d\n", debug->next == NULL? -1 : debug->next->num_ref);
+	vaddr_tracker* debug = search_vaddr(vaddr)->item;
+	printf("ref: curr next_num_to_ref: %d\n", debug->num_fut_ref->num_ref);
+	printf("ref: next num_to_ref: %d\n", debug->num_fut_ref->next == NULL ? -1 : debug->num_fut_ref->next->num_ref);
 	linked_list *ll = search_vaddr(vaddr);
 	if(ll == NULL) {
 		exit(1);
