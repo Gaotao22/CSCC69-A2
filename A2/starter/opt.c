@@ -212,7 +212,7 @@ void opt_ref(pgtbl_entry_t *p) {
 
 	printf("ref: %d has num_to_ref %d on frame %d\n", (int) vaddr, f->num_to_ref, frame_num);
 	number* debug = tracker[get_hash(vaddr)]->item->num_fut_ref;
-	printf("ref: next num_to_ref: %d\n", debug->next->num_ref);
+	printf("ref: next num_to_ref: %d\n", debug->next == NULL? -1 : debug->next->num_ref);
 	linked_list *ll = search_vaddr(vaddr);
 	if(ll == NULL) {
 		exit(1);
