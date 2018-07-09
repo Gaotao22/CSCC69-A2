@@ -202,7 +202,7 @@ int opt_evict() {
                 }
         }
 
-        printf("Evict: loop ended on %d\n", i);
+        printf("Evict: loop ended on %d, memsize: %d\n", i, memsize);
 
 	printf("Evict: Evicting frame %d, num_to_ref: %d\n", evict, coremap[evict].num_to_ref);
 	printf("Evict: opt completed\n\n\n");
