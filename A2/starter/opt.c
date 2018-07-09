@@ -288,7 +288,7 @@ void opt_init() {
 		printf("Init: complete\n");
 		fclose(tfile);
 		printf("Continue?\n");
-		scanf("c", NULL, NULL);
+		// scanf("c", NULL, NULL);
 		printf("\n\n\n\n");
 	}
 
