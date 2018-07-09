@@ -231,7 +231,7 @@ void opt_ref(pgtbl_entry_t *p) {
 		printf("\tref: loop new num_to_ref: %d\n", f->num_to_ref);
 	}
 
-	f->num_to_ref = next_num(ll);
+	// f->num_to_ref = next_num(ll);
 	printf("ref: new num_to_ref: %d\n", f->num_to_ref);
 	frame_num++;
 
