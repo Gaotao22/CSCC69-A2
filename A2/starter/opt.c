@@ -228,6 +228,7 @@ void opt_ref(pgtbl_entry_t *p) {
 
 	while(f->num_to_ref != -1 && f->num_to_ref <= frame_num) { // frame newly init'd
 		f->num_to_ref = next_num(ll);
+		printf("\tref: loop new num_to_ref: %d\n", f->num_to_ref);
 	}
 
 	f->num_to_ref = next_num(ll);
