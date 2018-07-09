@@ -59,12 +59,9 @@ unsigned int get_hash(addr_t vaddr) {
 
 /* vaddr tracking funcs */
 linked_list *search_vaddr(addr_t vaddr) {
-	printf("search: hashing vaddr\n");
 	int hashed = get_hash(vaddr);
 	linked_list *ll = tracker[hashed];
-	printf("search: searching %d\n", (int) vaddr);
 	vaddr_tracker *curr = ll->item;
-	printf("search: item vaddr %d\n", (int) curr->vaddr);
 
 	while(curr != NULL && curr->vaddr != vaddr && ll->next != NULL) {
 		ll = ll->next;
@@ -182,7 +179,6 @@ int next_num(linked_list *ll) {
  * for the page that is to be evicted.
  */
 int opt_evict() {
-	printf("Evict: starting\n");
 	int evict = 0;
 	int i;
         for(i = 0; i < memsize; i++) {
@@ -196,9 +192,6 @@ int opt_evict() {
         }
 
         coremap[evict].num_to_ref = 0; // reset the num to ref for next
-
-	printf("Evict: Evicting frame %d, num_to_ref: %d\n", evict, coremap[evict].num_to_ref);
-	printf("Evict: opt completed\n\n\n");
 	return evict;
 }
 
@@ -207,13 +200,10 @@ int opt_evict() {
  * Input: The page table entry for the page that is being accessed.
  */
 void opt_ref(pgtbl_entry_t *p) {
-	printf("ref: frame %d:\n", p->frame >> PAGE_SHIFT);
 	int frame_i = p->frame >> PAGE_SHIFT;
 	struct frame *f = &coremap[frame_i];
 	addr_t vaddr = f->vaddr;
-	printf("\tvaddr %d, num_to_ref %d\n", (int)f->vaddr, f->num_to_ref);
 
-	printf("ref: num_to_ref %d on frame %d\n", f->num_to_ref, frame_num);
 	linked_list *ll = search_vaddr(vaddr);
 	if(ll == NULL) {
 		exit(1);
@@ -221,14 +211,10 @@ void opt_ref(pgtbl_entry_t *p) {
 
 	while(f->num_to_ref != -1 && f->num_to_ref <= frame_num) { // frame newly init'd
 		f->num_to_ref = next_num(ll);
-		printf("\tref: loop new num_to_ref: %d\n", f->num_to_ref);
 	}
 
 	// f->num_to_ref = next_num(ll);
-	printf("ref: new num_to_ref: %d\n", f->num_to_ref);
 	frame_num++;
-
-	printf("ref: ref ended\n\n\n");
 	return;
 }
 
@@ -271,8 +257,6 @@ void opt_init() {
 		bucket_size = count > 100000 ? count / 100 : count; // random guess of a good bucket size tbh
 		tracker = (linked_list **)malloc(sizeof(linked_list *) * bucket_size);
 		int i = 0;
-		int ref = 0;
-		number *debug;
 		while(fgets(buf2, 256, tfile) != NULL) {
 			if(buf2[0] != '=') {
 				sscanf(buf2, "%c %lx", &type, &vaddr);
@@ -290,7 +274,6 @@ void opt_init() {
 
 		}
 		fclose(tfile);
-		printf("Init Complete\n\n\n");
 	}
 
 	frame_num = 0;
