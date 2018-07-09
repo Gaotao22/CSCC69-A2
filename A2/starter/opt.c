@@ -279,6 +279,7 @@ void opt_init() {
 				}
 
 				i++;
+				printf("Init: num_to_ref %d for vaddr %d", tracker[get_hash(vaddr)]->item->num_fut_ref->num_ref, (int)vaddr);
 				printf("Init: round %d of %d complete\n\n\n", i, count);
 			} else {
 			continue;
@@ -288,7 +289,7 @@ void opt_init() {
 		printf("Init: complete\n");
 		fclose(tfile);
 		printf("Continue?\n");
-		// scanf("c", NULL, NULL);
+		scanf("c", NULL, NULL);
 		printf("\n\n\n\n");
 	}
 
