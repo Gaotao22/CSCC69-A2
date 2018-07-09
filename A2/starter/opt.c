@@ -193,7 +193,7 @@ int opt_evict() {
 	int i;
         for(i = 0; i < memsize; i++) {
         	if(coremap[i].num_to_ref == -1) { // no more future refs
-        		coremap[i].num_to_ref = 0;
+        		coremap[i].num_to_ref = 0; // reset the num to ref for next
         		evict = i;
         		break;
         	}
@@ -309,7 +309,7 @@ void opt_init() {
 		printf("Init: complete\n");
 		fclose(tfile);
 		printf("Continue?\n");
-		scanf("c", NULL, NULL);
+		// scanf("c", NULL, NULL);
 		printf("\n\n\n\n");
 	}
 
