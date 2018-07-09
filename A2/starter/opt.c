@@ -188,6 +188,16 @@ int opt_evict() {
 	int evict = 0;
 	int i;
         for(i = 0; i < memsize; i++) {
+        	if(coremap[i].num_to_ref == frame_num) {
+        		vaddr_t = coremap[i].vaddr;
+        		linked_list *ll = search_vaddr(vaddr);
+        		if(ll == NULL) {
+        			exit(1);
+        		}
+
+        		int num = next_num(ll);
+        		coremap[i].num_to_ref = num;
+        	}
                 if(coremap[i].num_to_ref < coremap[evict].num_to_ref) {
                         evict = i;
                 }
@@ -210,13 +220,16 @@ void opt_ref(pgtbl_entry_t *p) {
 	printf("\tin use %c, vaddr %d, num_to_ref %d\n", f->in_use, (int)f->vaddr, f->num_to_ref);
 
 	printf("ref: %d\n", (int) vaddr);
-	linked_list *ll = search_vaddr(vaddr);
-	if(ll == NULL) {
-		exit(1);
-	}
+	if(frame->num_to_ref == frame_num) {
+		linked_list *ll = search_vaddr(vaddr);
+		if(ll == NULL) {
+			exit(1);
+		}
 
-	int num = next_num(ll);
-	f->num_to_ref = num;
+		int num = next_num(ll);
+		f->num_to_ref = num;
+	}
+	
 
 	frame_num++;
 
