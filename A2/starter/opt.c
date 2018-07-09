@@ -277,40 +277,28 @@ void opt_init() {
 	if (count >= 0){
 		rewind(tfile);
 		bucket_size = count > 100000 ? count / 100 : count; // random guess of a good bucket size tbh
-		printf("Init: start, count: %d\n", count);
 		tracker = (linked_list **)malloc(sizeof(linked_list *) * bucket_size);
-		printf("Init: Bucket initialized, %d\n",bucket_size);
 		int i = 0;
 		int ref = 0;
 		number *debug;
 		while(fgets(buf2, 256, tfile) != NULL) {
 			if(buf2[0] != '=') {
-				printf("Init: reading line %d\n", i);
 				sscanf(buf2, "%c %lx", &type, &vaddr);
-				printf("Init: alloc addr %d\n", i);
 				addList[i] = vaddr;
 
 				// vaddr tracker stuff
-				printf("vaddr: %d\n", (int) vaddr);
 				if(add_vaddr(tracker, vaddr, i) == -1) {
 					exit(-1);
 				}
 
 				i++;
-				debug = tracker[get_hash(vaddr)]->item->num_fut_ref;
-				while(debug->next != NULL) { debug = debug->next; }
-				printf("Init: num_to_ref %d for vaddr %d\n", debug->num_ref, (int)vaddr);
-				printf("Init: round %d of %d complete\n\n\n", i - 1, count);
 			} else {
 			continue;
 			}
 
 		}
-		printf("Init: complete\n");
 		fclose(tfile);
-		printf("Continue?\n");
-		// scanf("c", NULL, NULL);
-		printf("\n\n\n\n");
+		printf("Init Complete\n\n\n");
 	}
 
 	frame_num = 0;
