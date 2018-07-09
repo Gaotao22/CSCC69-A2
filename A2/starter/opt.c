@@ -184,6 +184,7 @@ int next_num(linked_list *ll) {
  * for the page that is to be evicted.
  */
 int opt_evict() {
+	printf("Evict: starting\n");
 	int evict = 0;
 	int i;
         for(i = 0; i < memsize; i++) {
@@ -192,7 +193,9 @@ int opt_evict() {
                 }
         }
 
-	return i;
+    printf("Evict: Evicting frame %d\n", evict);
+    printf("Evict: opt completed\n\n\n");
+	return evict;
 }
 
 /* This function is called on each access to a page to update any information
