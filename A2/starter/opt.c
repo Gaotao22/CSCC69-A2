@@ -53,8 +53,8 @@ unsigned int get_hash(addr_t vaddr) {
 	// pray to god this is actually a somewhat decent hash
 	// I have no idea if it is
 	printf("hash: bitshifting\n");
-	hashing = ((hashing << 5) ^ (hashing >> 10)) % hashing;
-	printf("%d-> %ld; bucket: %d\n", (int)vaddr, hashing, bucket_size);
+	hashing = ((hashing << 5) ^ (hashing >> 10)) % (hashing == 0 ? 1 : hashing);
+	printf("%d-> %ld\n", (int)vaddr, hashing);
 	return hashing == 0 ? hashing : (unsigned int)(hashing) % bucket_size;
 }
 /* end of hashmap stuff */
@@ -65,8 +65,12 @@ linked_list *search_vaddr(addr_t vaddr) {
 	int hashed = get_hash(vaddr);
 	printf("search: hashed vaddr\n");
 	linked_list *ll = tracker[hashed];
-	printf("searching %d", (int) vaddr);
+	printf("search: searching %d\n", (int) vaddr);
+	if(ll == NULL) {
+		printf("ll is null, about to crash\n");
+	}
 	vaddr_tracker *curr = ll->item;
+	printf("search: item vaddr %d\n", (int) curr->vaddr);
 
 	while(curr != NULL && curr->vaddr != vaddr && ll->next != NULL) {
 		ll = ll->next;
@@ -127,6 +131,7 @@ int add_vaddr(linked_list **tracker, addr_t vaddr, int count) {
 		if((status = init_vaddr(vaddr, ll)) != 0) {
 			return status;
 		}
+		tracker[hashed] = ll;
 	}
 
 	while(ll->item->vaddr != vaddr && ll->next != NULL) {
@@ -187,18 +192,6 @@ int opt_evict() {
                 }
         }
 
-        // if(coremap[i].pte->frame & PG_DIRTY) {
-        //         evict_dirty_count++;
-        // } else {
-        //         evict_clean_count++;
-        // }
-        pgtbl_entry_t *p = coremap[evict].pte;
-        p->frame ^= PG_VALID;
-        if(p->frame & PG_REF) {
-                p->frame ^= PG_REF;
-        }
-        swap_pageout(p->frame, p->swap_off);
-
 	return i;
 }
 
@@ -207,9 +200,11 @@ int opt_evict() {
  * Input: The page table entry for the page that is being accessed.
  */
 void opt_ref(pgtbl_entry_t *p) {
-	int frame_i = p->frame;
+	printf("ref: frame %d:\n", p->frame >> PAGE_SHIFT);
+	int frame_i = p->frame >> PAGE_SHIFT;
 	struct frame *f = &coremap[frame_i];
 	addr_t vaddr = f->vaddr;
+	printf("\tin use %c, vaddr %d, num_to_ref %d\n", f->in_use, (int)f->vaddr, f->num_to_ref);
 
 	printf("ref: %d\n", (int) vaddr);
 	linked_list *ll = search_vaddr(vaddr);
@@ -222,6 +217,7 @@ void opt_ref(pgtbl_entry_t *p) {
 
 	frame_num++;
 
+	printf("ref: ref ended\n\n\n");
 	return;
 }
 
@@ -258,15 +254,19 @@ void opt_init() {
 
 		}
 	}
-	addList = malloc(count);
+	addList = malloc(count * sizeof(addr_t));
 	if (count >= 0){
 		rewind(tfile);
 		bucket_size = count > 100000 ? count / 100 : count; // random guess of a good bucket size tbh
 		printf("Init: start, count: %d\n", count);
+		tracker = (linked_list **)malloc(sizeof(linked_list *) * bucket_size);
+		printf("Init: Bucket initialized, %d\n",bucket_size);
 		int i = 0;
 		while(fgets(buf2, 256, tfile) != NULL) {
 			if(buf2[0] != '=') {
+				printf("Init: reading line %d\n", i);
 				sscanf(buf2, "%c %lx", &type, &vaddr);
+				printf("Init: alloc addr %d\n", i);
 				addList[i] = vaddr;
 
 				// vaddr tracker stuff
@@ -276,15 +276,17 @@ void opt_init() {
 				}
 
 				i++;
+				printf("Init: round %d of %d complete\n\n\n", i, count);
 			} else {
 			continue;
 			}
 
 		}
-		
-		tracker = (linked_list **)malloc(sizeof(linked_list *) * bucket_size);
-		printf("Init: complete, bucket size: %d\n", bucket_size);
+		printf("Init: complete\n");
 		fclose(tfile);
+		printf("Continue?\n");
+		scanf("c", NULL, NULL);
+		printf("\n\n\n\n");
 	}
 
 	frame_num = 0;
