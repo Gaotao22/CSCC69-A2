@@ -201,7 +201,7 @@ int opt_evict() {
                 }
         }
 
-    printf("Evict: Evicting frame %d\n", evict);
+    printf("Evict: Evicting frame %d, num_to_ref: %d\n", evict, coremap[evict].num_to_ref);
     printf("Evict: opt completed\n\n\n");
 	return evict;
 }
