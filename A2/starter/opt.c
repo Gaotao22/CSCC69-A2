@@ -209,7 +209,7 @@ void opt_ref(pgtbl_entry_t *p) {
 	addr_t vaddr = f->vaddr;
 	printf("\tin use %c, vaddr %d, num_to_ref %d\n", f->in_use, (int)f->vaddr, f->num_to_ref);
 
-	printf("ref: %d\n", (int) vaddr);
+	printf("ref: %d has num_to_ref %d on frame %d\n", (int) vaddr, f->num_to_ref, frame_num);
 	linked_list *ll = search_vaddr(vaddr);
 	if(ll == NULL) {
 		exit(1);
