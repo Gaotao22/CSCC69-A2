@@ -265,6 +265,8 @@ void opt_init() {
 		tracker = (linked_list **)malloc(sizeof(linked_list *) * bucket_size);
 		printf("Init: Bucket initialized, %d\n",bucket_size);
 		int i = 0;
+		int ref = 0;
+		number *debug;
 		while(fgets(buf2, 256, tfile) != NULL) {
 			if(buf2[0] != '=') {
 				printf("Init: reading line %d\n", i);
@@ -279,7 +281,9 @@ void opt_init() {
 				}
 
 				i++;
-				printf("Init: num_to_ref %d for vaddr %d", tracker[get_hash(vaddr)]->item->num_fut_ref->num_ref, (int)vaddr);
+				debug = tracker[get_hash(vaddr)]->item->num_fut_ref;
+				while(debug->next != NULL) { debug = debug->next; }
+				printf("Init: num_to_ref %d for vaddr %d\n", debug->num_ref, (int)vaddr);
 				printf("Init: round %d of %d complete\n\n\n", i, count);
 			} else {
 			continue;
