@@ -226,12 +226,11 @@ void opt_ref(pgtbl_entry_t *p) {
 		exit(1);
 	}
 
-	if(f->num_to_ref == 0) { // frame newly init'd
-		next_num(ll);
+	while(f->num_to_ref <= frame_num) { // frame newly init'd
+		f->num_to_ref = next_num(ll);
 	}
 
-	int num = next_num(ll);
-	f->num_to_ref = num;
+	f->num_to_ref = next_num(ll);
 	printf("ref: new num_to_ref: %d\n", f->num_to_ref);
 	frame_num++;
 
