@@ -187,7 +187,6 @@ int opt_evict() {
 	int i;
         for(i = 0; i < memsize; i++) {
         	if(coremap[i].num_to_ref == -1) { // no more future refs
-        		coremap[i].num_to_ref = 0; // reset the num to ref for next
         		evict = i;
         		break;
         	}
@@ -195,6 +194,8 @@ int opt_evict() {
                         evict = i;
                 }
         }
+
+        coremap[evict].num_to_ref = 0; // reset the num to ref for next
 
 	printf("Evict: Evicting frame %d, num_to_ref: %d\n", evict, coremap[evict].num_to_ref);
 	printf("Evict: opt completed\n\n\n");
