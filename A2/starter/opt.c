@@ -161,6 +161,7 @@ int add_vaddr(linked_list **tracker, addr_t vaddr, int count) {
 	// if no entries exist for the num of frame counts yet
 	if(curr->num_fut_ref == NULL) {
 		curr->num_fut_ref = next_num;
+		curr->num_fut_ref->tail = next_num;
 	} else {
 		curr->num_fut_ref->tail->next = next_num;
 	}
@@ -284,7 +285,7 @@ void opt_init() {
 				debug = tracker[get_hash(vaddr)]->item->num_fut_ref;
 				while(debug->next != NULL) { debug = debug->next; }
 				printf("Init: num_to_ref %d for vaddr %d\n", debug->num_ref, (int)vaddr);
-				printf("Init: round %d of %d complete\n\n\n", i, count);
+				printf("Init: round %d of %d complete\n\n\n", i - 1, count);
 			} else {
 			continue;
 			}
