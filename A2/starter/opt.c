@@ -52,9 +52,7 @@ unsigned int get_hash(addr_t vaddr) {
 
 	// pray to god this is actually a somewhat decent hash
 	// I have no idea if it is
-	printf("hash: bitshifting\n");
 	hashing = ((hashing << 5) ^ (hashing >> 10)) % (hashing == 0 ? 1 : hashing);
-	printf("%d-> %ld\n", (int)vaddr, hashing);
 	return hashing == 0 ? hashing : (unsigned int)(hashing) % bucket_size;
 }
 /* end of hashmap stuff */
@@ -63,12 +61,8 @@ unsigned int get_hash(addr_t vaddr) {
 linked_list *search_vaddr(addr_t vaddr) {
 	printf("search: hashing vaddr\n");
 	int hashed = get_hash(vaddr);
-	printf("search: hashed vaddr\n");
 	linked_list *ll = tracker[hashed];
 	printf("search: searching %d\n", (int) vaddr);
-	if(ll == NULL) {
-		printf("ll is null, about to crash\n");
-	}
 	vaddr_tracker *curr = ll->item;
 	printf("search: item vaddr %d\n", (int) curr->vaddr);
 
@@ -199,11 +193,8 @@ int opt_evict() {
         	}
                 if(coremap[i].num_to_ref > coremap[evict].num_to_ref) {
                         evict = i;
-                        printf("Evict: currently num_to_ref: %d\n", coremap[evict].num_to_ref);
                 }
         }
-
-        printf("Evict: loop ended on %d, memsize: %d\n", i, memsize);
 
 	printf("Evict: Evicting frame %d, num_to_ref: %d\n", evict, coremap[evict].num_to_ref);
 	printf("Evict: opt completed\n\n\n");
@@ -219,9 +210,9 @@ void opt_ref(pgtbl_entry_t *p) {
 	int frame_i = p->frame >> PAGE_SHIFT;
 	struct frame *f = &coremap[frame_i];
 	addr_t vaddr = f->vaddr;
-	printf("\tin use %c, vaddr %d, num_to_ref %d\n", f->in_use, (int)f->vaddr, f->num_to_ref);
+	printf("\tvaddr %d, num_to_ref %d\n", (int)f->vaddr, f->num_to_ref);
 
-	printf("ref: %d has num_to_ref %d on frame %d\n", (int) vaddr, f->num_to_ref, frame_num);
+	printf("ref: num_to_ref %d on frame %d\n", f->num_to_ref, frame_num);
 	linked_list *ll = search_vaddr(vaddr);
 	if(ll == NULL) {
 		exit(1);
